@@ -1,0 +1,45 @@
+# 访问端口
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: prod
+
+# jwt
+jwt:
+  header: Authorization
+  token-start-with: "Bearer "
+  expired-millisecond: 14400000
+
+# 上传模式
+upload:
+  mode: oss
+  local:
+    url: https://static.javanpe.com/
+    # 本地文件存储路径
+    path: /usr/local/upload/
+  oss:
+    # 自定义域名
+    url: https://static.theblindlight.com/
+    # 地域节点
+    endpoint: https://oss-cn-shenzhen.aliyuncs.com
+    # Bucket名称
+    bucketName: theblindlight
+    # AccessKey ID
+    accessKeyId: LTAI5tMCcjQoa23zfYdHLmKg
+    # AccessKey Secret
+    accessKeySecret: DbGc1wCIzNSZUywVpjywPt5CgATZdA
+
+# 搜索模式(mysql elasticsearch)
+search:
+  mode: elasticsearch
+
+# 第三方登录
+qq:
+  app-id: 102027945
+  app-secret: PiohLkuqcAUs41jD
+
+weibo:
+  app-key: 3875506424
+  app-secret: 12e7c8d37aa8d70c841f91552c26fc24

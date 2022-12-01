@@ -1,0 +1,61 @@
+spring:
+  # 配置MySql
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/blog?characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: "0802"
+  # 配置Redis
+  redis:
+    host: 175.178.112.233
+    port: 6379
+    password: ZJJ990802...
+  # 上传文件大小
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  # swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  # 邮件配置
+  mail:
+    # 配置smtp服务主机地址
+    host: smtp.qq.com
+    # 发送邮箱
+    username: 744773901@qq.com
+    # 授权码
+    password: pwtvejwsoencbcec
+    port: 587
+    default-encoding: utf-8
+    properties:
+      mail:
+      smtp:
+      auth: true
+      socketFactory:
+      class: javax.net.ssl.SSLSocketFactory
+  # RabbitMQ配置
+  rabbitmq:
+    host: 175.178.112.233
+    port: 5672
+    username: root
+    password: ZJJ990802...
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3 #最大重试次数
+          initial-interval: 3000 #重试间隔时间（单位毫秒）
+  # elasticsearch配置
+  elasticsearch:
+    uris: http://175.178.112.233:9200
+
+# 配置Mybatis-Plus
+mybatis-plus:
+  type-aliases-package: com.zjj.blog.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true

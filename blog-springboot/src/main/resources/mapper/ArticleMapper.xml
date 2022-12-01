@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjj.blog.mapper.ArticleMapper">
+
+    <resultMap id="adminArticleDTOResultMap" type="com.zjj.blog.dto.AdminArticleDTO">
+        <id column="id" property="id"/>
+        <result column="article_cover" property="articleCover"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="type" property="type"/>
+        <result column="is_top" property="isTop"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="status" property="status"/>
+        <collection property="tagDTOList" ofType="com.zjj.blog.dto.TagDTO">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="tagName"/>
+        </collection>
+    </resultMap>
+    <resultMap id="articleHomeDTOResultMap" type="com.zjj.blog.dto.ArticleHomeDTO">
+        <id column="id" property="id"/>
+        <result column="article_cover" property="articleCover"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="article_content" property="articleContent"/>
+        <result column="create_time" property="createTime"/>
+        <result column="type" property="type"/>
+        <result column="is_top" property="isTop"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <collection property="tagList" ofType="com.zjj.blog.dto.TagDTO">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="tagName"/>
+        </collection>
+    </resultMap>
+    <resultMap id="articleResultMap" type="com.zjj.blog.dto.ArticleDTO">
+        <id column="id" property="id"/>
+        <result column="article_cover" property="articleCover"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="article_content" property="articleContent"/>
+        <result column="type" property="type"/>
+        <result column="original_url" property="originalUrl"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <collection property="tagList" ofType="com.zjj.blog.dto.TagDTO">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="tagName"/>
+        </collection>
+    </resultMap>
+    <resultMap id="articlePreviewResultMap" type="com.zjj.blog.dto.ArticlePreviewDTO">
+        <id column="id" property="id"/>
+        <result column="article_cover" property="articleCover"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="create_time" property="createTime"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <collection property="tagDTOList" ofType="com.zjj.blog.dto.TagDTO">
+            <id column="tag_id" property="id"/>
+            <result column="tag_name" property="tagName"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryArticleCount" resultType="java.lang.Integer">
+        SELECT count(distinct a.id)
+        FROM `tb_article` a
+        left join tb_article_tag atag on a.id = atag.article_id
+        <where>
+            a.is_delete = #{condition.isDelete}
+            <if test="condition.keyword != null">
+                and a.article_title like concat('%',#{condition.keyword},'%')
+            </if>
+            <if test="condition.status != null">
+                and a.status = #{condition.status}
+            </if>
+            <if test="condition.categoryId != null">
+                and a.category_id = #{condition.categoryId}
+            </if>
+            <if test="condition.type != null">
+                and a.type = #{condition.type}
+            </if>
+            <if test="condition.tagId != null">
+                and atag.tag_id = #{condition.tagId}
+            </if>
+        </where>
+    </select>
+    <select id="listAdminArticles" resultMap="adminArticleDTOResultMap">
+        SELECT a.id,
+        a.article_cover,
+        a.article_title,
+        a.type,
+        a.is_top,
+        a.`status`,
+        a.is_delete,
+        a.create_time,
+        c.category_name,
+        t.id AS tag_id,
+        t.tag_name
+        FROM (
+        SELECT
+        id,
+        category_id,
+        article_cover,
+        article_title,
+        type,
+        is_top,
+        `status`,
+        is_delete,
+        create_time
+        FROM tb_article
+        <where>
+            is_delete = #{condition.isDelete}
+            <if test="condition.categoryId != null">
+                and category_id = #{condition.categoryId}
+            </if>
+            <if test="condition.type != null">
+                and type = #{condition.type}
+            </if>
+            <if test="condition.status != null">
+                and `status` = #{condition.status}
+            </if>
+            <if test="condition.keyword != null">
+                and article_title like concat('%', #{condition.keyword}, '%')
+            </if>
+
+            <if test="condition.tagId != null">
+                and id in(SELECT article_id FROM tb_article_tag WHERE tag_id = #{condition.tagId})
+            </if>
+        </where>
+        ORDER BY
+        is_top DESC,
+        id DESC
+        limit #{current},#{size}
+        ) a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        LEFT JOIN tb_article_tag atg ON a.id = atg.article_id
+        LEFT JOIN tb_tag t ON atg.tag_id = t.id
+        ORDER BY
+        is_top DESC,
+        a.id DESC
+    </select>
+    <select id="selectArticleList" resultMap="articleHomeDTOResultMap">
+        SELECT a.id,
+               a.category_id,
+               a.article_cover,
+               a.article_title,
+               SUBSTR(a.article_content, 1, 500) AS article_content,
+               a.type,
+               a.is_top,
+               a.create_time,
+               c.category_name,
+               t.id                              AS tag_id,
+               t.tag_name
+        FROM (SELECT id,
+                     category_id,
+                     article_cover,
+                     article_title,
+                     article_content,
+                     type,
+                     is_top,
+                     create_time
+              FROM tb_article
+              WHERE is_delete = 0
+                AND status = 1
+             ) a
+                 JOIN tb_category c ON c.id = a.category_id
+                 JOIN tb_article_tag atg ON atg.article_id = a.id
+                 JOIN tb_tag t ON t.id = atg.tag_id
+        ORDER BY is_top DESC, id DESC
+        LIMIT #{current},#{size}
+    </select>
+    <select id="listArticleRecommend" resultType="com.zjj.blog.dto.ArticleRecommendDTO">
+        SELECT id,
+               article_cover,
+               article_title,
+               create_time
+        FROM (
+                 SELECT DISTINCT article_id
+                 FROM (SELECT tag_id FROM tb_article_tag WHERE article_id = #{id}) t1
+                          JOIN tb_article_tag atg ON atg.tag_id = t1.tag_id
+                 WHERE article_id != #{id}
+             ) t2
+                 JOIN tb_article a ON a.id = t2.article_id
+        WHERE is_delete = 0
+        ORDER BY is_top DESC,
+                 id DESC
+        LIMIT 6
+    </select>
+    <select id="selectArticleById" resultMap="articleResultMap">
+        SELECT a.id,
+               a.article_cover,
+               a.article_title,
+               a.article_content,
+               a.type,
+               a.original_url,
+               a.create_time,
+               a.update_time,
+               a.category_id,
+               c.category_name,
+               t.id AS tag_id,
+               t.tag_name
+        FROM tb_article a
+                 JOIN tb_category c ON a.category_id = c.id
+                 JOIN tb_article_tag atg ON a.id = atg.article_id
+                 JOIN tb_tag t ON t.id = atg.tag_id
+        WHERE a.id = #{id}
+          AND a.is_delete = 0
+          AND a.status = 1
+    </select>
+    <select id="listArticlesByCondition" resultMap="articlePreviewResultMap">
+        SELECT
+        a.id,
+        article_cover,
+        article_title,
+        a.create_time,
+        a.category_id,
+        category_name,
+        t.id AS tag_id,
+        t.tag_name
+        FROM
+        (
+        SELECT
+        id,
+        article_cover,
+        article_title,
+        article_content,
+        create_time,
+        category_id
+        FROM
+        tb_article
+        <where>
+            <if test="condition.categoryId != null">
+                category_id = #{condition.categoryId}
+            </if>
+            <if test="condition.tagId != null">
+                id IN (
+                SELECT
+                article_id
+                FROM
+                tb_article_tag
+                WHERE
+                tag_id = #{condition.tagId})
+            </if>
+        </where>
+        AND is_delete = 0
+        AND status = 1
+        ORDER BY id DESC
+        LIMIT #{current},#{size}
+        ) a
+        JOIN tb_category c ON a.category_id = c.id
+        JOIN tb_article_tag atg ON a.id = atg.article_id
+        JOIN tb_tag t ON t.id = atg.tag_id
+    </select>
+    <select id="listArticleStatistics" resultType="com.zjj.blog.dto.ArticleStatisticsDTO">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+               COUNT(1) AS count
+        FROM `tb_article`
+        GROUP BY date
+        ORDER BY date DESC
+    </select>
+</mapper>

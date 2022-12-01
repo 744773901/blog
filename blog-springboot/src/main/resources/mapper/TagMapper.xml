@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjj.blog.mapper.TagMapper">
+
+    <select id="listTagNameByArticleId" resultType="java.lang.String">
+        select tag_name
+        from tb_tag
+                 join tb_article_tag tat on tb_tag.id = tat.tag_id
+        where tat.article_id = #{id}
+    </select>
+    <select id="listAdminTag" resultType="com.zjj.blog.vo.AdminTagVO">
+        SELECT t.id,
+        t.tag_name,
+        count( tat.article_id ) AS article_count,
+        t.create_time
+        FROM tb_tag t
+        LEFT JOIN tb_article_tag tat ON tat.tag_id = t.id
+        <where>
+            <if test="condition.keyword != null">
+                t.tag_name LIKE CONCAT('%', #{condition.keyword}, '%')
+            </if>
+        </where>
+        GROUP BY t.id
+        ORDER BY t.id
+        LIMIT #{current}, #{size}
+    </select>
+</mapper>
