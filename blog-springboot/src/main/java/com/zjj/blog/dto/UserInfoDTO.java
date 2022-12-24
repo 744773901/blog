@@ -90,6 +90,16 @@ public class UserInfoDTO {
     private String ipSource;
 
     /**
+     * 浏览器
+     */
+    private String browser;
+
+    /**
+     * 操作系统
+     */
+    private String os;
+
+    /**
      * 最近登录时间
      */
     private LocalDateTime lastLoginTime;

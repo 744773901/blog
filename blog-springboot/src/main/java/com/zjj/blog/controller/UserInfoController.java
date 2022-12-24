@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 
 import static com.zjj.blog.constant.OperateTypeConst.UPDATE;
-import static com.zjj.blog.constant.OperateTypeConst.UPLOAD;
 
 /**
  * @author 知白守黑
@@ -139,6 +138,4 @@ public class UserInfoController {
         userInfoService.offlineUser(id);
         return Result.ok();
     }
-
-    //TODO 下线用户token处理相关
 }

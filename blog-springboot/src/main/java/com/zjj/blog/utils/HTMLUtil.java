@@ -1,6 +1,13 @@
 package com.zjj.blog.utils;
 
+import com.alibaba.fastjson2.JSON;
 import com.github.houbb.sensitive.word.bs.SensitiveWordBs;
+import com.zjj.blog.constant.CommonConst;
+import com.zjj.blog.vo.Result;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * HTML工具类
@@ -50,6 +57,21 @@ public class HTMLUtil {
         // 删除style标签
         source = source.replaceAll("<[\\s]*?style[^>]*?>[\\s\\S]*?<[\\s]*?\\/[\\s]*?style[\\s]*?>", "");
         return source;
+    }
+
+    /**
+     * 响应处理
+     *
+     * @param response 响应
+     * @param result   返回结果
+     * @throws IOException IO异常
+     */
+    public static void render(HttpServletResponse response, Result<?> result) throws IOException {
+        response.setContentType(CommonConst.APPLICATION_JSON);
+        OutputStream outputStream = response.getOutputStream();
+        outputStream.write(JSON.toJSONBytes(result));
+        outputStream.flush();
+        outputStream.close();
     }
 
 }

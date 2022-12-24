@@ -1,5 +1,6 @@
 package com.zjj.blog.controller;
 
+import com.zjj.blog.annotation.AccessRateLimit;
 import com.zjj.blog.annotation.OperateLog;
 import com.zjj.blog.dto.MessageDTO;
 import com.zjj.blog.service.MessageService;
@@ -42,6 +43,7 @@ public class MessageController {
      * @param messageVO 留言信息
      * @return {@link Result<>}
      */
+    @AccessRateLimit(second = 60, counter = 3)
     @ApiOperation(value = "添加留言")
     @PostMapping("/messages")
     public Result<?> saveMessage(@Validated @RequestBody MessageVO messageVO) {

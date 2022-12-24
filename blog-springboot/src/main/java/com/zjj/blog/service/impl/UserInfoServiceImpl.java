@@ -161,6 +161,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .talkLikeSet(loginUser.getTalkLikeSet())
                 .ipAddress(loginUser.getIpAddress())
                 .ipSource(loginUser.getIpSource())
+                .browser(loginUser.getBrowser())
+                .os(loginUser.getOs())
                 .lastLoginTime(loginUser.getLastLoginTime())
                 .build();
         // 缓存登录用户信息 过期时间单位/秒
@@ -188,7 +190,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public void offlineUser(Integer id) {
-        //TODO 下线在线用户处理
+        //TODO 下线用户token处理相关
         UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
                 .select(UserAuth::getUsername)
                 .eq(UserAuth::getUserInfoId, id));

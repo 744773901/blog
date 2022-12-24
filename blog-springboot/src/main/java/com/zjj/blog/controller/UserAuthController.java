@@ -1,5 +1,6 @@
 package com.zjj.blog.controller;
 
+import com.zjj.blog.annotation.AccessRateLimit;
 import com.zjj.blog.dto.UserAreaDTO;
 import com.zjj.blog.security.domain.LoginBody;
 import com.zjj.blog.service.UserAuthService;
@@ -53,6 +54,7 @@ public class UserAuthController {
         return Result.ok(userAuthService.getCode());
     }
 
+    @AccessRateLimit(second = 60, counter = 1)
     @ApiOperation(value = "发送验证码")
     @ApiImplicitParam(name = "username", value = "用户名", required = true, dataTypeClass = String.class)
     @GetMapping("/user/code")
