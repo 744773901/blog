@@ -4,7 +4,7 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: prod
 
 # jwt
 jwt:
@@ -33,7 +33,7 @@ upload:
 
 # 搜索模式(mysql elasticsearch)
 search:
-  mode: elasticsearch
+  mode: mysql
 
 # 第三方登录
 qq:
