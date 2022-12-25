@@ -35,6 +35,10 @@ upload:
 search:
   mode: mysql
 
+# 博客前台地址
+website:
+  url: https://javanpe.com
+
 # 第三方登录
 qq:
   app-id: 102027945

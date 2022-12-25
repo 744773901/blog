@@ -57,6 +57,10 @@ public class CommonConst {
      */
     public static final Integer DEFAULT_CONFIG_ID = 1;
     /**
+     * 博主id
+     */
+    public static final Integer BLOGGER_ID = 1;
+    /**
      * 省
      */
     public static final String PROVINCE = "省";

@@ -1,13 +1,21 @@
 package com.zjj.blog.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zjj.blog.constant.CommonConst;
 import com.zjj.blog.dto.CommentDTO;
+import com.zjj.blog.dto.EmailDTO;
 import com.zjj.blog.dto.ReplyCountDTO;
 import com.zjj.blog.dto.ReplyDTO;
 import com.zjj.blog.entity.Comment;
+import com.zjj.blog.enums.CommentTypeEnum;
+import com.zjj.blog.mapper.ArticleMapper;
 import com.zjj.blog.mapper.CommentMapper;
+import com.zjj.blog.mapper.TalkMapper;
+import com.zjj.blog.mapper.UserInfoMapper;
 import com.zjj.blog.service.BlogInfoService;
 import com.zjj.blog.service.CommentService;
 import com.zjj.blog.service.RedisService;
@@ -15,16 +23,22 @@ import com.zjj.blog.utils.HTMLUtil;
 import com.zjj.blog.utils.PageUtil;
 import com.zjj.blog.utils.UserUtil;
 import com.zjj.blog.vo.*;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.zjj.blog.constant.CommonConst.FALSE;
 import static com.zjj.blog.constant.CommonConst.TRUE;
+import static com.zjj.blog.constant.RabbitMQConst.EMAIL_EXCHANGE;
 import static com.zjj.blog.constant.RedisConst.COMMENT_LIKE_COUNT;
 import static com.zjj.blog.constant.RedisConst.USER_COMMENT_LIKE;
 
@@ -41,6 +55,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private RedisService redisService;
     @Resource
     private BlogInfoService blogInfoService;
+    @Resource
+    private ArticleMapper articleMapper;
+    @Resource
+    private TalkMapper talkMapper;
+    @Resource
+    private UserInfoMapper userInfoMapper;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @Value("${website.url}")
+    private String websiteUrl;
 
     @Override
     public PageResult<AdminCommentVO> listAdminComment(ConditionVO condition) {
@@ -120,7 +145,53 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 .isReview(isCommentReview == TRUE ? FALSE : TRUE)
                 .build();
         commentMapper.insert(comment);
-        //TODO 评论邮箱通知
+        //评论邮箱通知
+        if (websiteConfig.getIsEmailNotice() == TRUE) {
+            CompletableFuture.runAsync(() -> notice(comment));
+        }
+    }
+
+    /**
+     * 评论邮件通知
+     *
+     * @param comment 评论
+     */
+    public void notice(Comment comment) {
+        Integer userId = CommonConst.BLOGGER_ID;
+        Integer topicId = comment.getTopicId();
+        CommentTypeEnum commentTypeEnum = Objects.requireNonNull(CommentTypeEnum.getCommentType(comment.getType()));
+        if (Objects.nonNull(comment.getReplyUserId())) {
+            userId = comment.getReplyUserId();
+        } else {
+            switch (commentTypeEnum) {
+                case ARTICLE:
+                    userId = articleMapper.selectById(topicId).getUserId();
+                    break;
+                case TALK:
+                    userId = talkMapper.selectById(topicId).getUserId();
+                    break;
+                default:
+                    break;
+            }
+        }
+        EmailDTO emailDTO = new EmailDTO();
+        String email;
+        //根据评论是否审核处理邮件发送
+        if (comment.getIsReview().equals(TRUE)) {
+            email = userInfoMapper.selectById(userId).getEmail();
+            if (StringUtils.isNotBlank(email)) {
+                emailDTO.setEmail(email);
+                emailDTO.setSubject("评论提醒");
+                String url = websiteUrl + commentTypeEnum.getPath() + topicId;
+                emailDTO.setContent("收到一条新评论, 请前往" + url + "\n查看");
+            }
+        } else {
+            email = userInfoMapper.selectById(CommonConst.BLOGGER_ID).getEmail();
+            emailDTO.setEmail(email);
+            emailDTO.setSubject("评论审核提醒");
+            emailDTO.setContent("收到一条新评论, 请前往博客后台管理审核");
+        }
+        rabbitTemplate.convertAndSend(EMAIL_EXCHANGE, "*", new Message(JSON.toJSONBytes(emailDTO), new MessageProperties()));
     }
 
     @Override
