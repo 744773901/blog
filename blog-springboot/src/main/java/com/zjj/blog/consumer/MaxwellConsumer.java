@@ -3,7 +3,6 @@ package com.zjj.blog.consumer;
 import com.alibaba.fastjson2.JSON;
 import com.zjj.blog.dto.ArticleSearchDTO;
 import com.zjj.blog.dto.MaxwellDataDTO;
-import com.zjj.blog.entity.Article;
 import com.zjj.blog.mapper.ElasticSearchMapper;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

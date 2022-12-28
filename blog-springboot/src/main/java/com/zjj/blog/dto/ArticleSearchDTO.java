@@ -1,5 +1,6 @@
 package com.zjj.blog.dto;
 
+import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,18 +33,21 @@ public class ArticleSearchDTO {
      * 文章标题
      */
     @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @JSONField(name = "article_title")
     private String articleTitle;
 
     /**
      * 文章内容
      */
     @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @JSONField(name = "article_content")
     private String articleContent;
 
     /**
      * 逻辑删除
      */
     @Field(type = FieldType.Integer)
+    @JSONField(name = "is_delete")
     private Integer isDelete;
 
     /**

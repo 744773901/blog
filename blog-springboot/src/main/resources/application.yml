@@ -33,7 +33,7 @@ upload:
 
 # 搜索模式(mysql elasticsearch)
 search:
-  mode: mysql
+  mode: elasticsearch
 
 # 博客前台地址
 website:
