@@ -27,9 +27,9 @@ upload:
     # Bucket名称
     bucketName: theblindlight
     # AccessKey ID
-    accessKeyId: LTAI5tMCcjQoa23zfYdHLmKg
+    accessKeyId: 你的AccessKey ID
     # AccessKey Secret
-    accessKeySecret: DbGc1wCIzNSZUywVpjywPt5CgATZdA
+    accessKeySecret: 你的AccessKey Secret
 
 # 搜索模式(mysql elasticsearch)
 search:
